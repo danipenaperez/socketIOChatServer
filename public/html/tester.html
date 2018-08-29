@@ -1,0 +1,68 @@
+<html>
+<head>
+	<link rel="stylesheet" href="../stylesheets/deviceDisplay.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+    <script>
+    //Info about the server 	
+    var socketIOServer;
+    var chatRoomId;
+	function start(){
+		socketIOServer = "http://localhost:3001";
+		chatRoomId = $('#chatRoomId').val();
+		//alert(socketIOServer);
+	    var socket = new io.connect(socketIOServer);
+        socket.connect();
+        socket.send('I am a connected client');
+        socket.on('connect', function(){  $('body').append('connected to events!' + '<br>');  })
+        socket.on('chatMessage', function(message){ 
+          $('body').append("aoas" +JSON.stringify(message));
+        })
+        socket.on('disconnect', function(){ })
+        socket.on('update', function(message){ $('body').append(JSON.stringify(message) + '<br>');})
+        socket.emit('subscribe', chatRoomId );
+    }
+
+    function printMessage(msgInfo){
+
+    }
+
+    
+    /**
+    * publish a message
+    **/
+    function publish(){
+    	var outmsg = {
+    		user_NickName: $('#user_NickName').val(),
+    		chatRoom: chatRoomId,
+    		event: "chatMessage",
+    		content: $('#out_msg').val(),
+    	}
+    	$.ajax({
+		    url: "http://localhost:3000/chatRoom"+"/"+chatRoomId,
+		    type: 'POST',
+		    contentType: 'application/json',
+		    data: JSON.stringify(outmsg),
+		    //dataType:'text',//use if empty response
+		    success: function(result) {
+		    	console.log('pues muy bien');
+		    },error: function(result) {
+		        console.log('pues muy mal');
+		    }
+		});
+    }
+    </script>
+</head>
+<body>
+	<label for="user_NickName">Nickname</label>
+	<input type="text" id="user_NickName" name="user_NickName" />
+	</br>
+	chatRoomIt: <input id="chatRoomId" name="chatRoomId" type="text" />
+	</br>
+	<input type="button" onclick="javascript:start();" value="start">
+	</br>
+	<input type="text" id="out_msg" name="out_msg" />
+	<input type="button" onclick="javascript:publish();" value="Send">
+	<br>
+</body>
+</html>
